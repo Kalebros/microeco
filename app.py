@@ -148,6 +148,17 @@ def nivel_requerido(nivel):
         return update_wrapper(wrapped_function,fn)
     return decorator
 
+def isOwnerOrAdmin(model):
+    def decorator(fn):
+        def wrapped_function(*args,**kwargs):
+            resource_id=request.path.split('/')[-1]
+            resource=model.query.filter_by(id=resource_id).first()
+            if current_identity.id != resource.user.id and current_identity.nivel!='Admin':
+                raise JWTError('Acceso no permitido','No tiene suficientes privilegios para acceder al recurso')
+            return fn(*args,**kwargs)
+        return update_wrapper(wrapped_function,fn)
+    return decorator
+
 @app.after_request
 def gnu_terry_pratchett(resp):
     resp.headers.add('X-Clacks-Overhead','GNU Terry Pratchett')
@@ -195,46 +206,42 @@ def addCuenta():
 @app.route('/cuentas/<cuenta_id>',methods=['GET'])
 @jwt_required()
 @nivel_requerido(['Admin','User'])
+@isOwnerOrAdmin(Cuenta)
 def listar_operaciones(cuenta_id):
     cuenta=Cuenta.query.filter_by(id=cuenta_id).first()
-    if current_identity.nivel!='Admin' and current_identity.id!=cuenta.user.id:
-        raise JWTError('Acceso no permitido','No tiene permisos para ver esta cuenta')
-    else:
-        result=cuenta.to_dict()
-        operaciones_entrada=cuenta.destino.all()
-        lista_Entrada=[]
-        for operacion in operaciones_entrada:
-            lista_Entrada.append(operacion.to_dict())
-        operaciones_salida=cuenta.origen.all()
-        lista_Salida=[]
-        for operacion in operaciones_salida:
-            lista_Salida.append(operacion.to_dict())
-        result['operaciones']={}
-        result['operaciones']['entrada']=lista_Entrada
-        result['operaciones']['salida']=lista_Salida
-        return jsonify(result)
+    result=cuenta.to_dict()
+    operaciones_entrada=cuenta.destino.all()
+    lista_Entrada=[]
+    for operacion in operaciones_entrada:
+        lista_Entrada.append(operacion.to_dict())
+    operaciones_salida=cuenta.origen.all()
+    lista_Salida=[]
+    for operacion in operaciones_salida:
+        lista_Salida.append(operacion.to_dict())
+    result['operaciones']={}
+    result['operaciones']['entrada']=lista_Entrada
+    result['operaciones']['salida']=lista_Salida
+    return jsonify(result)
 
 @app.route('/cuentas/<cuenta_id>',methods=['POST'])
 @jwt_required()
 @nivel_requerido(['Admin','User'])
+@isOwnerOrAdmin(Cuenta)
 def add_operacion(cuenta_id):
     cuenta=Cuenta.query.filter_by(id=cuenta_id).first()
-    if current_identity.nivel!='Admin' and current_identity.id!=cuenta.user.id:
-        raise JWTError('Acceso no permitido','No tiene permisos para ver esta cuenta')
+    nOperacion=Operacion.from_dict(request.get_json())
+    cOrigen=Cuenta.query.filter_by(id=request.get_json()['origen']).first()
+    cDestino=Cuenta.query.filter_by(id=request.get_json()['destino']).first()
+    if cOrigen.user.id!=current_identity.id:
+        raise JWTError('Violacion de cuenta','No tiene permisos sobre la cuenta de origen')
+    elif cDestino.user.id!=current_identity.id:
+        raise JWTError('Violacion de cuenta','No tiene permisos sobre la cuenta de destino')
     else:
-        nOperacion=Operacion.from_dict(request.get_json())
-        cOrigen=Cuenta.query.filter_by(id=request.get_json()['origen']).first()
-        cDestino=Cuenta.query.filter_by(id=request.get_json()['destino']).first()
-        if cOrigen.user.id!=current_identity.id:
-            raise JWTError('Violacion de cuenta','No tiene permisos sobre la cuenta de origen')
-        elif cDestino.user.id!=current_identity.id:
-            raise JWTError('Violacion de cuenta','No tiene permisos sobre la cuenta de destino')
-        else:
-            nOperacion.origen=cOrigen
-            nOperacion.destino=cDestino
-            db.session.add(nOperacion)
-            db.session.commit()
-            return jsonify(nOperacion.to_dict())
+        nOperacion.origen=cOrigen
+        nOperacion.destino=cDestino
+        db.session.add(nOperacion)
+        db.session.commit()
+        return jsonify(nOperacion.to_dict())
     raise JWTError('Error desconocido','No se pudo llevar a cabo la operacion solicitada')
 
 @app.route('/user/<user_id>')
