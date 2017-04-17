@@ -88,3 +88,9 @@ flask/
 
 # Rope project settings
 .ropeproject
+
+# Base de datos
+*.db
+
+# Configuracion
+config.py
