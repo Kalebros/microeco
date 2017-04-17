@@ -168,8 +168,8 @@ def users():
             listado=User.query.all()
             for user in listado:
                 listaUsers.append(user.to_dict())
-            return json.dumps(listaUsers)
-    return json.dumps(current_identity.to_dict())
+            return jsonify(listaUsers)
+    return jsonify(current_identity.to_dict())
 
 @app.route('/cuentas',methods=['GET'])
 @jwt_required()
