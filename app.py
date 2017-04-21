@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import Flask,request,jsonify
+import os
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash,check_password_hash
 from flask_jwt import JWT,jwt_required,current_identity,JWTError
@@ -11,7 +12,7 @@ from datetime import datetime,timedelta
 app=Flask(__name__)
 app.debug=True
 app.config['SECRET_KEY']='super-secret-key'
-app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///app.db'
+app.config['SQLALCHEMY_DATABASE_URI']=os.environ('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
 app.config['JWT_EXPIRATION_DELTA']=timedelta(days=10)
 db=SQLAlchemy(app)
