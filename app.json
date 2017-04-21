@@ -1,0 +1,8 @@
+{
+  "name":"MicroEco",
+  "description":"Gestor de microeconomía, proyecto de fin de semana",
+  "image":"heroku/python",
+  "repository":"https://github.com/Kalebros/microeco",
+  "keywords":["python","flask"],
+  "addons":["heroku-postgresql"]
+}

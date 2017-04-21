@@ -94,3 +94,6 @@ flask/
 
 # Configuracion
 config.py
+
+# Heroku environment
+var.env
