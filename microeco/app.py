@@ -140,6 +140,3 @@ def add_operacion(cuenta_id):
 def informacion_usuario(user_id):
     user=User.query.filter_by(id=user_id).first()
     return jsonify(user.to_dict())
-
-if __name__=="__main__":
-    app.run()
