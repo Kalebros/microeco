@@ -10,7 +10,7 @@ Jinja2==2.9.6
 MarkupSafe==1.0
 packaging==16.8
 pbr==2.1.0
-pkg-resources
+pkg-resources==0.0.0
 PyJWT==1.4.2
 pyparsing==2.2.0
 six==1.10.0
