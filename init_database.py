@@ -2,7 +2,6 @@
 
 from app import db
 from app import User,Cuenta,Operacion
-from config import *
 from datetime import datetime
 
 #Limpiar la base de datos
