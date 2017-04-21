@@ -7,7 +7,6 @@ from flask_jwt import JWT,jwt_required,current_identity,JWTError
 from functools import update_wrapper
 from flask import request
 
-
 def authenticate(username,password):
     user=User.query.filter_by(username=username).first()
     if user and user.validate_password(password):
