@@ -1,27 +1,12 @@
-# -*- coding: utf-8 -*-
-
+#-*- coding: utf-8 -*-
 from flask import Blueprint,request,jsonify
 
-from .auth import *
-from .models import User,Cuenta,Operacion
+from ..auth import *
+from ..models import Cuenta,Operacion
 
-api=Blueprint('api',__name__)
+api_cuentas=Blueprint('api_cuentas',__name__)
 
-@api.route('/user')
-@jwt_required()
-@nivel_requerido(['Admin','User'])
-def users():
-    print request.args.get('show',None)
-    if request.args.get('show',None) == 'all':
-        if current_identity.nivel == 'Admin':
-            listaUsers=[]
-            listado=User.query.all()
-            for user in listado:
-                listaUsers.append(user.to_dict())
-            return jsonify(listaUsers)
-    return jsonify(current_identity.to_dict())
-
-@api.route('/cuentas',methods=['GET'])
+@api_cuentas.route('/cuentas',methods=['GET'])
 @jwt_required()
 @nivel_requerido(['Admin','User'])
 def cuentas():
@@ -29,9 +14,9 @@ def cuentas():
     result=[]
     for cuenta in lista_cuentas:
         result.append(cuenta.to_dict())
-    return json.dumps(result)
+    return jsonify(result)
 
-@api.route('/cuentas',methods=['POST'])
+@api_cuentas.route('/cuentas',methods=['POST'])
 @jwt_required()
 @nivel_requerido(['Admin','User'])
 def addCuenta():
@@ -42,7 +27,7 @@ def addCuenta():
     r.status_code=201
     return r
 
-@api.route('/cuentas/<cuenta_id>',methods=['GET'])
+@api_cuentas.route('/cuentas/<cuenta_id>',methods=['GET'])
 @jwt_required()
 @nivel_requerido(['Admin','User'])
 @isOwnerOrAdmin(Cuenta)
@@ -62,7 +47,7 @@ def listar_operaciones(cuenta_id):
     result['operaciones']['salida']=lista_Salida
     return jsonify(result)
 
-@api.route('/cuentas/<cuenta_id>',methods=['POST'])
+@api_cuentas.route('/cuentas/<cuenta_id>',methods=['POST'])
 @jwt_required()
 @nivel_requerido(['Admin','User'])
 @isOwnerOrAdmin(Cuenta)
@@ -82,10 +67,3 @@ def add_operacion(cuenta_id):
         db.session.commit()
         return jsonify(nOperacion.to_dict())
     raise JWTError('Error desconocido','No se pudo llevar a cabo la operacion solicitada')
-
-@api.route('/user/<user_id>')
-@jwt_required()
-@nivel_requerido(['Admin'])
-def informacion_usuario(user_id):
-    user=User.query.filter_by(id=user_id).first()
-    return jsonify(user.to_dict())
