@@ -16,6 +16,7 @@ db=SQLAlchemy(app)
 
 from .models import *
 from .auth import *
+
 from .api import api as api_blueprint
 app.register_blueprint(api_blueprint,url_prefix='/api/v1')
 
